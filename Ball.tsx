@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber/native'
 import { useGLTF, Environment, useTexture, OrbitControls } from '@react-three/drei/native'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -17,7 +17,15 @@ export const Ball = ({
     rightcrossbarRef,
     brickBackRef,
     brickLeftRef,
-    brickRightRef }: {
+    points,
+    setPoints,
+    isGoal,
+    setIsGoal,
+    brickRightRef,
+    shotsRemaining,
+    setShotRemaining,
+    showNotification,
+restartGame }: {
         ballRef?: any,
         keeperRef?: any,
         postRef?: any,
@@ -30,7 +38,15 @@ export const Ball = ({
         rightcrossbarRef: any,
         brickBackRef: any,
         brickLeftRef: any,
-        brickRightRef: any
+        brickRightRef: any,
+        points: any,
+        setPoints: any,
+        isGoal: any,
+        setIsGoal: any,
+        showNotification: any,
+        shotsRemaining: any,
+        setShotRemaining: any,
+        restartGame:any
     }) => {
 
     const gltf = useLoader(GLTFLoader, '/low_poly_cartoon_football_ball_free.glb');
@@ -44,7 +60,14 @@ export const Ball = ({
 
     const handlePointerDown = (e: any) => {
         e.stopPropagation()
-        mouseDownTime.current = Date.now()
+        if(shotsRemaining >= 1){
+         mouseDownTime.current = Date.now()
+        
+        }
+        if(shotsRemaining === 0){
+            showNotification('You Ran Out of Attempts', 'miss')
+            restartGame()
+        }
     }
 
     const handlePointerUp = (e: any) => {
@@ -71,12 +94,21 @@ export const Ball = ({
         const speed = minSpeed + (maxSpeed - minSpeed) * holdRatio
 
         velocity.current.copy(dir.multiplyScalar(speed))
+        setShotRemaining((s:any) => s-1)
     }
     // update position each frame
+
+    useEffect(() => {
+        if (isGoal) {
+            onGoal()
+            showNotification('GOAL!!!', 'success')
+            setShotRemaining(3)
+        }
+    }, [isGoal])
+
     useFrame((state, delta) => {
         const mesh = ballRef.current
         if (!mesh) return
-
         // compute bounding radius once (in world scale) for collision checks
         if (radiusRef.current === null) {
             try {
@@ -139,10 +171,14 @@ export const Ball = ({
 
                 // Move ball outside keeper to prevent sticking
                 mesh.position.copy(keeperCenter).add(bounceDir.multiplyScalar(radius + 0.5))
+                showNotification('SAVED BY KEEPER!', 'save')
+                if (points >= 20) {
+                    setPoints((s: any) => s - 20)
+                }
 
                 setTimeout(() => {
-                    mesh.position.set(0, 0.5, 0)
                     velocity.current.set(0, 0, 0)
+                    restartGame()
                 }, 1000)
             }
         }
@@ -187,8 +223,11 @@ export const Ball = ({
 
                     // Break after first collision to avoid multiple bounces per frame
                     setTimeout(() => {
-                        mesh.position.set(0, 0.5, 0)
+                        // mesh.position.set(0, 0.5, 0)
                         velocity.current.set(0, 0, 0)
+                        showNotification('Hit The Woodwork!', 'miss')
+                        restartGame()
+                        
                     }, 1000)
                     break
                 }
@@ -231,7 +270,8 @@ export const Ball = ({
 
                     // Break after first collision to avoid multiple bounces per frame
                     setTimeout(() => {
-                        mesh.position.set(0, 0.5, 0)
+                        showNotification('Out of Play', 'miss')
+                        restartGame()
                     }, 1000)
                     break
                 }
@@ -254,21 +294,17 @@ export const Ball = ({
                 // const goalLineCenter = new THREE.Vector3()
                 // goalLine.getCenter(goalLineCenter)
                 velocity.current.multiplyScalar(0.3)
-                onGoal()
+                setIsGoal(true)
                 // Reset ball position after goal
                 setTimeout(() => {
+                    // velocity.current.set(0, 0, 0)
                     mesh.position.set(0, 0.5, 0)
                     velocity.current.set(0, 0, 0)
+                    setIsGoal(false)
                 }, 1000)
-                console.log('Goalllllllll')
+
             }
-
         }
-
-
-
-
-
     })
 
     return (

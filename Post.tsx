@@ -62,7 +62,6 @@ brickRightRef:any }) => {
             <mesh position={[1.5, -0.2, 0.1]} rotation={[0, Math.PI / 2, 0]} ref={lineRef}>
                 <planeGeometry args={[7.2, 4]} />
                 <meshStandardMaterial
-                    color="#1a34a9ff"
                     transparent
                     opacity={0.01}
                 />
@@ -71,7 +70,6 @@ brickRightRef:any }) => {
             <mesh position={[1.5, 4, 0.1]} rotation={[0, Math.PI / 2, 0]} ref={wallRef}>
                 <planeGeometry args={[8, 3.5]} />
                 <meshStandardMaterial
-                    color="#1a34a9ff"
                     transparent
                     opacity={0.01}
                 />
@@ -80,7 +78,6 @@ brickRightRef:any }) => {
             <mesh position={[1.5, -0.2, 7.5]} rotation={[0, Math.PI / 2, 0]} ref={wallRef}>
                 <planeGeometry args={[7.2, 12]} />
                 <meshStandardMaterial
-                    color="#1a34a9ff"
                     transparent
                     opacity={0.01}
                 />
@@ -88,7 +85,6 @@ brickRightRef:any }) => {
             <mesh position={[1.5, -0.2, -7.5]} rotation={[0, Math.PI / 2, 0]} ref={wallRef}>
                 <planeGeometry args={[7.2, 12]} />
                 <meshStandardMaterial
-                    color="#1a34a9ff"
                     transparent
                     opacity={0.01}
                 />
