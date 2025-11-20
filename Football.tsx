@@ -1,6 +1,6 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react'
 import { useFrame, Canvas, useLoader, useThree } from '@react-three/fiber/native'
-import { useGLTF, Environment, useTexture, OrbitControls } from '@react-three/drei/native'
+import { useGLTF, Environment, useTexture, OrbitControls, Text } from '@react-three/drei/native'
 import * as THREE from 'three'
 import { Pitch } from './Pitch'
 import { Shoe } from './Shoe'
@@ -16,6 +16,10 @@ export default function Football() {
     const postRef = useRef<any>(null)
     const keeperRef = useRef<any>(null)
     const lineRef = useRef<any>(null)
+    const wallRef = useRef<any>(null)
+    const brickBackRef  = useRef<any>(null)
+    const brickLeftRef = useRef<any>(null)
+    const brickRightRef = useRef<any>(null)
     const leftcrossbarRef = useRef<any>(null)
     const topcrossbarRef = useRef<any>(null)
     const rightcrossbarRef = useRef<any>(null)
@@ -43,6 +47,9 @@ export default function Football() {
         
         return () => clearInterval(interval)
     }, [])
+
+
+ 
     return (
 
         <>
@@ -59,6 +66,7 @@ export default function Football() {
 
             />
             <Canvas camera={{ position: [3, 2, 0], fov: 100 }}>
+                {/* <axesHelper args={[2]}  /> */}
                 <OrbitControls
                     enableZoom={true}
                     enablePan={true}
@@ -92,6 +100,7 @@ export default function Football() {
                 <ambientLight intensity={0.5} />
                 <directionalLight intensity={1.5} position={[5, 10, 5]} />
                 <directionalLight intensity={0.8} position={[-6, 2, 2]} />
+                <directionalLight intensity={0.8} position={[6, 2, 2]} />
                 <Suspense fallback={null}>
                     <Environment preset="park" />
 
@@ -102,12 +111,20 @@ export default function Football() {
                     topcrossbarRef={topcrossbarRef}
                     leftcrossbarRef={leftcrossbarRef}
                     rightcrossbarRef={rightcrossbarRef}
+                    wallRef={wallRef}
+                    brickBackRef={brickBackRef}
+                    brickLeftRef={brickLeftRef}
+                    brickRightRef={brickRightRef}
                     />
                     <Ball
                         ballRef={ballRef}
                         keeperRef={keeperRef}
                         postRef={postRef}
                         lineRef={lineRef}
+                        wallRef={wallRef}
+                        brickBackRef={brickBackRef}
+                    brickLeftRef={brickLeftRef}
+                    brickRightRef={brickRightRef}
                         onGoal={handleGoal}
                         difficulty={difficulty}
                         topcrossbarRef={topcrossbarRef}

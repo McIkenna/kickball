@@ -10,19 +10,27 @@ export const Ball = ({
     postRef,
     onGoal,
     lineRef,
+    wallRef,
     difficulty,
     topcrossbarRef,
     leftcrossbarRef,
-    rightcrossbarRef }: {
+    rightcrossbarRef,
+    brickBackRef,
+    brickLeftRef,
+    brickRightRef }: {
         ballRef?: any,
         keeperRef?: any,
         postRef?: any,
+        wallRef?: any,
         onGoal: any,
         difficulty: any,
         lineRef: any,
         topcrossbarRef: any,
         leftcrossbarRef: any,
-        rightcrossbarRef: any
+        rightcrossbarRef: any,
+        brickBackRef: any,
+        brickLeftRef: any,
+        brickRightRef: any
     }) => {
 
     const gltf = useLoader(GLTFLoader, '/low_poly_cartoon_football_ball_free.glb');
@@ -131,6 +139,11 @@ export const Ball = ({
 
                 // Move ball outside keeper to prevent sticking
                 mesh.position.copy(keeperCenter).add(bounceDir.multiplyScalar(radius + 0.5))
+
+                setTimeout(() => {
+                    mesh.position.set(0, 0.5, 0)
+                    velocity.current.set(0, 0, 0)
+                }, 1000)
             }
         }
 
@@ -139,11 +152,13 @@ export const Ball = ({
         const topcrossbar = topcrossbarRef?.current
         const leftcrossbar = leftcrossbarRef?.current
         const rightcrossbar = rightcrossbarRef?.current
+        const wall = wallRef.current
 
         const crossbars = [
             { ref: topcrossbar, name: 'top' },
             { ref: leftcrossbar, name: 'left' },
-            { ref: rightcrossbar, name: 'right' }
+            { ref: rightcrossbar, name: 'right' },
+            { ref: wall, name: 'wall' }
         ]
 
         for (const crossbar of crossbars) {
@@ -171,6 +186,53 @@ export const Ball = ({
                     mesh.position.copy(crossbarCenter).add(bounceDir.multiplyScalar(radius + 0.2))
 
                     // Break after first collision to avoid multiple bounces per frame
+                    setTimeout(() => {
+                        mesh.position.set(0, 0.5, 0)
+                        velocity.current.set(0, 0, 0)
+                    }, 1000)
+                    break
+                }
+            }
+        }
+
+        const wallBack = brickBackRef?.current
+        const wallLeft = brickLeftRef?.current
+        const wallRight = brickRightRef?.current
+
+        const wallStacks = [
+            { ref: wallBack, name: 'back' },
+            { ref: wallLeft, name: 'left' },
+            { ref: wallRight, name: 'right' },
+        ]
+
+        for (const wallStack of wallStacks) {
+            if (wallStack.ref) {
+                const wallstackBox = new THREE.Box3().setFromObject(wallStack.ref)
+                const ballSphere = new THREE.Sphere(mesh.position, radius)
+
+                if (wallstackBox.intersectsSphere(ballSphere)) {
+                    // Ball hit the crossbar - bounce back
+                    const wallstackCenter = new THREE.Vector3()
+                    wallstackBox.getCenter(wallstackCenter)
+                    console.log('Ball Hit wall')
+
+                    // Calculate bounce direction (away from crossbar)
+                    const bounceDir = new THREE.Vector3()
+                        .subVectors(mesh.position, wallstackCenter)
+                        .normalize()
+
+                    const currentSpeed = velocity.current.length()
+                    const bounceSpeed = Math.max(currentSpeed * 0.7, 2) // At least 3 units/sec
+
+                    velocity.current.copy(bounceDir.multiplyScalar(bounceSpeed))
+
+                    // Move ball outside crossbar to prevent sticking
+                    mesh.position.copy(wallstackCenter).add(bounceDir.multiplyScalar(radius + 0.5))
+
+                    // Break after first collision to avoid multiple bounces per frame
+                    setTimeout(() => {
+                        mesh.position.set(0, 0.5, 0)
+                    }, 1000)
                     break
                 }
             }
@@ -183,8 +245,6 @@ export const Ball = ({
         const line = lineRef.current
 
         if (line || post) {
-            const ballPos = mesh.position
-            const ballRadius = radius
 
             const goalLine = new THREE.Box3().setFromObject(line)
             const ballSphere = new THREE.Sphere(mesh.position, radius)
@@ -194,16 +254,18 @@ export const Ball = ({
                 // const goalLineCenter = new THREE.Vector3()
                 // goalLine.getCenter(goalLineCenter)
                 velocity.current.multiplyScalar(0.3)
-                    onGoal()
-                    // Reset ball position after goal
-                    setTimeout(() => {
-                        mesh.position.set(0, 0.5, 0)
-                        velocity.current.set(0, 0, 0)
-                    }, 1000)
+                onGoal()
+                // Reset ball position after goal
+                setTimeout(() => {
+                    mesh.position.set(0, 0.5, 0)
+                    velocity.current.set(0, 0, 0)
+                }, 1000)
                 console.log('Goalllllllll')
             }
 
         }
+
+
 
 
 
